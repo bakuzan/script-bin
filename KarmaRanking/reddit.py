@@ -5,6 +5,7 @@ import praw
 
 def create_reddit():
     try:
+        print("Login in to reddit...")
         reddit = praw.Reddit(client_id=environ.get("CLIENT_ID"),
                              client_secret=environ.get("CLIENT_SECRET"),
                              password=environ.get('PASSWORD'),
