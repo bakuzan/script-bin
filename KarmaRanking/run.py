@@ -3,11 +3,11 @@ from os.path import abspath, join, dirname
 import sys
 import praw
 from urllib import request
-from logging import Logger
 from reddit import create_reddit
 from config import load_config
+from upload import upload_files
+from log import log, logger
 
-logger = Logger("karma-log")
 
 season_names = {
     'fall': '10',
@@ -47,7 +47,9 @@ def build_filename(title, ext, suffix):
 
 def do_search(sub, search):
     timeframe = os.environ.get("TIMEFRAME", "all")
-    print("Search subreddit with '%s' in timeframe %s" % (search, timeframe))
+
+    log("Search subreddit with '%s' in timeframe %s" % (search, timeframe))
+    results = []
     for post in sub.search(search, sort="new", time_filter=timeframe):
         is_imgur = "imgur" in post.url
         is_ireddit = "i.redd.it" in post.url
@@ -58,12 +60,17 @@ def do_search(sub, search):
         if is_ireddit:
             ext = post.url.split(".")[-1]
             filename = build_filename(post.title, ext, "")
+            log("Requesting %s" % post.url)
             request.urlretrieve(post.url, filename=filename)
+            results.append(filename)
 
         if is_imgur:
             ext = "zip"
             filename = build_filename(post.title, ext, "-and-overview")
             request.urlretrieve("%s/zip" % post.url, filename=filename)
+
+    log("Search complete.")
+    return results
 
 
 if __name__ == "__main__":
@@ -72,7 +79,10 @@ if __name__ == "__main__":
 
     try:
         search = os.environ.get("SEARCH_STRING", "karma ranking")
-        do_search(anime, search)
+        files = do_search(anime, search)
+
+        if len(files) != 0:
+            upload_files(files)
 
     except praw.exceptions.APIException as e:
         logger.warn(e)
