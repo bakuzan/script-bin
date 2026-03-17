@@ -16,7 +16,7 @@ mccabe==0.6.1
 oauthlib==3.1.0
 praw==6.3.1
 prawcore==1.0.1
-pyasn1==0.4.8
+pyasn1==0.6.3
 pyasn1-modules==0.2.8
 pycodestyle==2.5.0
 pylint==2.3.1
